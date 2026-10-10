@@ -22,7 +22,7 @@ npm run build
 
 ### Development Roadmap
 - [x] **Feature 1: Core Architecture Foundation** (TypeScript, Vite, Reactive Store, Canvas/WebGL 3D engine, Backgrounds, Layout, Text, Export Hub, Playwright E2E)
-- [ ] **Feature 2: Screenshot & Device Mockup Studio** (8 hardware frames, single/compare/montage modes)
+- [x] **Feature 2: Screenshot & Device Mockup Studio** (8 hardware frames, single/compare/montage modes, auto-palette extraction, Playwright E2E)
 - [ ] **Feature 3: Vector & Canvas Annotation Suite** (Arrows, text pills, boxes, blurs, emojis, loupe, 3D tracking)
 - [ ] **Feature 4: Code Snippet & Terminal Beautifier** (26 languages, 10 themes, line highlights, CLI mode, AI code generation)
 - [ ] **Feature 5: Social Media Post Simulator** (8 platforms, native light/dark UI, verified badges, metric counters)

@@ -3,17 +3,22 @@ import { AppState, ToolId, AspectRatio } from './core/store/types';
 import { renderStudioComposition, createOffscreenComposition } from './core/render/renderer';
 import { copyCanvasToClipboard, downloadCanvas, batchExportZip } from './core/export/raster';
 
+import { ScreenshotTool } from './tools/screenshot/screenshotTool';
+
 export const store = new Store();
 
 // Cache canvas elements
 const canvas = document.getElementById('preview-canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
+// Tool instances
+export const screenshotTool = new ScreenshotTool(store);
+
 // Active tool content canvas provider
 let currentContentCanvas: HTMLCanvasElement = document.createElement('canvas');
 
 /**
- * Updates the base content canvas (placeholder for Feature 1)
+ * Updates the base content canvas
  */
 export function setContentCanvas(newCanvas: HTMLCanvasElement): void {
   currentContentCanvas = newCanvas;
@@ -21,58 +26,38 @@ export function setContentCanvas(newCanvas: HTMLCanvasElement): void {
 }
 
 /**
- * Creates an initial placeholder graphic for Feature 1 testing
- */
-function createInitialContent(): HTMLCanvasElement {
-  const c = document.createElement('canvas');
-  c.width = 640;
-  c.height = 420;
-  const cctx = c.getContext('2d')!;
-
-  // Background
-  cctx.fillStyle = '#1e1f2b';
-  cctx.fillRect(0, 0, c.width, c.height);
-
-  // Decorative app UI representation
-  cctx.fillStyle = '#2a2d3e';
-  cctx.fillRect(20, 20, c.width - 40, 48);
-
-  // Circles for window traffic lights
-  const dots = ['#ff5f57', '#febc2e', '#28c840'];
-  dots.forEach((dot, idx) => {
-    cctx.beginPath();
-    cctx.arc(42 + idx * 22, 44, 6, 0, Math.PI * 2);
-    cctx.fillStyle = dot;
-    cctx.fill();
-  });
-
-  // App body box
-  cctx.fillStyle = '#161722';
-  cctx.fillRect(20, 80, c.width - 40, c.height - 100);
-
-  cctx.font = '600 24px "Plus Jakarta Sans", sans-serif';
-  cctx.fillStyle = '#ffffff';
-  cctx.textAlign = 'center';
-  cctx.fillText('Visual Mockup Studio', c.width / 2, 180);
-
-  cctx.font = '400 15px "Plus Jakarta Sans", sans-serif';
-  cctx.fillStyle = '#9ca3af';
-  cctx.fillText('High-performance client-side graphic engine ready', c.width / 2, 220);
-
-  return c;
-}
-
-currentContentCanvas = createInitialContent();
-
-/**
  * Primary rendering loop
  */
 export function render(): void {
+  const activeTool = store.state.activeTool;
+  if (activeTool === 'screenshot') {
+    currentContentCanvas = screenshotTool.renderContent();
+  }
+
   renderStudioComposition(ctx, {
     state: store.state,
     contentCanvas: currentContentCanvas,
   });
   updateUI();
+}
+
+let lastActiveTool: ToolId | null = null;
+export function syncToolPanel(): void {
+  const activeTool = store.state.activeTool;
+  if (lastActiveTool === activeTool) return;
+  lastActiveTool = activeTool;
+
+  const titleEl = document.getElementById('panel-tool-title');
+  const bodyEl = document.getElementById('panel-tool-body');
+  if (!bodyEl || !titleEl) return;
+
+  if (activeTool === 'screenshot') {
+    titleEl.textContent = 'Screenshot & Framing';
+    screenshotTool.renderSettingsUI(bodyEl, () => render());
+  } else {
+    titleEl.textContent = `${activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} Settings`;
+    bodyEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Settings for ${activeTool} will appear here.</p>`;
+  }
 }
 
 function updateUI(): void {
@@ -111,6 +96,7 @@ function updateUI(): void {
 
 // Subscribe to state updates
 store.subscribe(() => {
+  syncToolPanel();
   render();
 });
 
@@ -326,4 +312,5 @@ function setupBindings(): void {
 
 // Bootstrap
 setupBindings();
+syncToolPanel();
 render();
