@@ -4,6 +4,7 @@ import { renderStudioComposition, createOffscreenComposition } from './core/rend
 import { copyCanvasToClipboard, downloadCanvas, batchExportZip } from './core/export/raster';
 
 import { ScreenshotTool } from './tools/screenshot/screenshotTool';
+import { Annotator, AnnotationToolType } from './core/annotations/annotate';
 
 export const store = new Store();
 
@@ -13,6 +14,7 @@ const ctx = canvas.getContext('2d')!;
 
 // Tool instances
 export const screenshotTool = new ScreenshotTool(store);
+export const annotator = new Annotator(store);
 
 // Active tool content canvas provider
 let currentContentCanvas: HTMLCanvasElement = document.createElement('canvas');
@@ -283,6 +285,36 @@ function setupBindings(): void {
     });
   });
 
+  // Annotation toolbar bindings
+  document.querySelectorAll('#annot-toolbar .annot-btn[data-tool]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#annot-toolbar .annot-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tool = (btn as HTMLElement).dataset.tool as AnnotationToolType;
+      annotator.setTool(tool);
+    });
+  });
+
+  document.getElementById('btn-annot-delete')?.addEventListener('click', () => {
+    annotator.deleteSelected();
+  });
+
+  // Canvas interaction for placing annotations
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+
+    // Approximate center content coordinates
+    annotator.handleCanvasClick(clickX, clickY);
+
+    // Sync toolbar active button state
+    document.querySelectorAll('#annot-toolbar .annot-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelector(`#annot-toolbar .annot-btn[data-tool="${annotator.activeTool}"]`)?.classList.add('active');
+  });
+
   // Global Keyboard Shortcuts
   window.addEventListener('keydown', (e) => {
     const isCtrl = e.ctrlKey || e.metaKey;
@@ -306,6 +338,26 @@ function setupBindings(): void {
     } else if (isCtrl && key === 'c' && !inInput && !window.getSelection()?.toString()) {
       e.preventDefault();
       copyCanvasToClipboard(canvas);
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && !inInput) {
+      if (annotator.deleteSelected()) {
+        e.preventDefault();
+      }
+    } else if (!isCtrl && !inInput) {
+      // Annotation tool shortcuts
+      const toolMap: Record<string, AnnotationToolType> = {
+        v: 'select',
+        t: 'text',
+        a: 'arrow',
+        r: 'box',
+        e: 'sticker',
+        l: 'loupe',
+        b: 'blur',
+      };
+      if (toolMap[key]) {
+        annotator.setTool(toolMap[key]);
+        document.querySelectorAll('#annot-toolbar .annot-btn').forEach((b) => b.classList.remove('active'));
+        document.querySelector(`#annot-toolbar .annot-btn[data-tool="${toolMap[key]}"]`)?.classList.add('active');
+      }
     }
   });
 }

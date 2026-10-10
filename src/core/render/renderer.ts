@@ -3,6 +3,7 @@ import { drawBackground } from '../backgrounds/backgrounds';
 import { computeLayout, drawContentBorder, drawContentShadow, roundedRectPath } from './layout';
 import { renderPerspective } from './perspective';
 import { drawTextOverlay } from './text';
+import { drawAnnotations } from '../annotations/annotations';
 
 export interface RenderContext {
   state: AppState;
@@ -14,8 +15,19 @@ export interface RenderContext {
 export function renderStudioComposition(ctx: CanvasRenderingContext2D, context: RenderContext): void {
   const { state, contentCanvas, customBgImage, aspectOverride } = context;
 
-  // 1. Calculate 3D perspective projection on the center content canvas
-  const { canvas: projectedContent, projection } = renderPerspective(contentCanvas, state.effect);
+  // Clone content canvas and draw attached annotations before 3D projection
+  const annotatedContent = document.createElement('canvas');
+  annotatedContent.width = contentCanvas.width;
+  annotatedContent.height = contentCanvas.height;
+  const actx = annotatedContent.getContext('2d')!;
+  actx.drawImage(contentCanvas, 0, 0);
+
+  if (state.annotations && state.annotations.length > 0) {
+    drawAnnotations(actx, state.annotations, contentCanvas);
+  }
+
+  // 1. Calculate 3D perspective projection on the annotated content canvas
+  const { canvas: projectedContent, projection } = renderPerspective(annotatedContent, state.effect);
 
   // 2. Compute Layout & Canvas Dimensions
   const layout = aspectOverride ? { ...state.layout, aspect: aspectOverride } : state.layout;

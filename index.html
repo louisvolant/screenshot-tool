@@ -60,6 +60,19 @@
   <main class="workspace">
     <!-- Center Live Canvas Stage -->
     <section class="stage">
+      <!-- Floating Annotation Toolbar -->
+      <div class="annot-toolbar" id="annot-toolbar">
+        <button class="annot-btn active" data-tool="select" title="Select / Move (V)">↖</button>
+        <button class="annot-btn" data-tool="text" title="Text Pill (T)">T</button>
+        <button class="annot-btn" data-tool="arrow" title="Curved Arrow (A)">↗</button>
+        <button class="annot-btn" data-tool="box" title="Bounding Box (R)">▢</button>
+        <button class="annot-btn" data-tool="sticker" title="Emoji Sticker (E)">🚀</button>
+        <button class="annot-btn" data-tool="loupe" title="Magnifying Loupe (L)">🔍</button>
+        <button class="annot-btn" data-tool="blur" title="Privacy Blur (B)">░</button>
+        <span style="width: 1px; height: 18px; background: var(--border); margin: 0 4px;"></span>
+        <button class="annot-btn" id="btn-annot-delete" title="Delete Annotation (Del)">🗑</button>
+      </div>
+
       <div class="canvas-container">
         <canvas id="preview-canvas"></canvas>
       </div>
