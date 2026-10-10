@@ -10,6 +10,7 @@ import { SocialTool } from './tools/social/socialTool';
 import { TestimonialTool } from './tools/testimonial/testimonialTool';
 import { ChatTool } from './tools/chat/chatTool';
 import { NotificationTool } from './tools/notification/notificationTool';
+import { AnnounceTool } from './tools/announce/announceTool';
 
 export const store = new Store();
 
@@ -25,6 +26,7 @@ export const socialTool = new SocialTool(store);
 export const testimonialTool = new TestimonialTool(store);
 export const chatTool = new ChatTool(store);
 export const notificationTool = new NotificationTool(store);
+export const announceTool = new AnnounceTool(store);
 
 // Active tool content canvas provider
 let currentContentCanvas: HTMLCanvasElement = document.createElement('canvas');
@@ -54,6 +56,8 @@ export function render(): void {
     currentContentCanvas = chatTool.renderContent();
   } else if (activeTool === 'notification') {
     currentContentCanvas = notificationTool.renderContent();
+  } else if (activeTool === 'announce') {
+    currentContentCanvas = announceTool.renderContent();
   }
 
   renderStudioComposition(ctx, {
@@ -91,9 +95,13 @@ export function syncToolPanel(): void {
   } else if (activeTool === 'notification') {
     titleEl.textContent = 'Notification & Toast Settings';
     notificationTool.renderSettingsUI(bodyEl, () => render());
+  } else if (activeTool === 'announce') {
+    titleEl.textContent = 'Key Metrics & Release Settings';
+    announceTool.renderSettingsUI(bodyEl, () => render());
   } else {
-    titleEl.textContent = `${activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} Settings`;
-    bodyEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Settings for ${activeTool} will appear here.</p>`;
+    const fallbackName = String(activeTool);
+    titleEl.textContent = `${fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)} Settings`;
+    bodyEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Settings for ${fallbackName} will appear here.</p>`;
   }
 }
 

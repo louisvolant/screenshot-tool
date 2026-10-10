@@ -29,7 +29,7 @@ npm run build
 - [x] **Feature 6: Customer Testimonial & Review Card Generator** (ratings, logos, avatars, custom typography, Playwright E2E)
 - [x] **Feature 7: Chat & Messaging Conversation Simulator** (11 messengers, up to 30 bubbles, timestamps, read ticks, Playwright E2E)
 - [x] **Feature 8: Mobile & Desktop Notification Mockup** (iOS, Android, macOS, Web toast, lockscreen framing, Playwright E2E)
-- [ ] **Feature 9: Key Metrics & Product Release Announcement Cards** (KPI with sparkline, changelog badges)
+- [x] **Feature 9: Key Metrics & Product Release Announcement Cards** (KPI with sparkline, changelog badges, Playwright E2E)
 - [ ] **Feature 10: Presets Browser, JSON Import/Export & Batch ZIP Packaging** (55+ presets, batch packaging)
 
 ---
