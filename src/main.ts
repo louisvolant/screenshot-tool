@@ -5,6 +5,7 @@ import { copyCanvasToClipboard, downloadCanvas, batchExportZip } from './core/ex
 
 import { ScreenshotTool } from './tools/screenshot/screenshotTool';
 import { Annotator, AnnotationToolType } from './core/annotations/annotate';
+import { CodeTool } from './tools/code/codeTool';
 
 export const store = new Store();
 
@@ -15,6 +16,7 @@ const ctx = canvas.getContext('2d')!;
 // Tool instances
 export const screenshotTool = new ScreenshotTool(store);
 export const annotator = new Annotator(store);
+export const codeTool = new CodeTool(store);
 
 // Active tool content canvas provider
 let currentContentCanvas: HTMLCanvasElement = document.createElement('canvas');
@@ -34,6 +36,8 @@ export function render(): void {
   const activeTool = store.state.activeTool;
   if (activeTool === 'screenshot') {
     currentContentCanvas = screenshotTool.renderContent();
+  } else if (activeTool === 'code') {
+    currentContentCanvas = codeTool.renderContent();
   }
 
   renderStudioComposition(ctx, {
@@ -56,6 +60,9 @@ export function syncToolPanel(): void {
   if (activeTool === 'screenshot') {
     titleEl.textContent = 'Screenshot & Framing';
     screenshotTool.renderSettingsUI(bodyEl, () => render());
+  } else if (activeTool === 'code') {
+    titleEl.textContent = 'Code & Terminal Settings';
+    codeTool.renderSettingsUI(bodyEl, () => render());
   } else {
     titleEl.textContent = `${activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} Settings`;
     bodyEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Settings for ${activeTool} will appear here.</p>`;
