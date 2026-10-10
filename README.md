@@ -25,7 +25,7 @@ npm run build
 - [x] **Feature 2: Screenshot & Device Mockup Studio** (8 hardware frames, single/compare/montage modes, auto-palette extraction, Playwright E2E)
 - [x] **Feature 3: Vector & Canvas Annotation Suite** (Arrows, text pills, boxes, blurs, emojis, loupe, 3D tracking, Playwright E2E)
 - [x] **Feature 4: Code Snippet & Terminal Beautifier** (26 languages, 10 themes, line highlights, CLI mode, AI code generation, Playwright E2E)
-- [ ] **Feature 5: Social Media Post Simulator** (8 platforms, native light/dark UI, verified badges, metric counters)
+- [x] **Feature 5: Social Media Post Simulator** (8 platforms, native light/dark UI, verified badges, metric counters, Playwright E2E)
 - [ ] **Feature 6: Customer Testimonial & Review Card Generator** (ratings, logos, avatars, custom typography)
 - [ ] **Feature 7: Chat & Messaging Conversation Simulator** (11 messengers, up to 30 bubbles, timestamps, read ticks)
 - [ ] **Feature 8: Mobile & Desktop Notification Mockup** (iOS, Android, macOS, Web toast, lockscreen framing)

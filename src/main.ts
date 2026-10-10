@@ -6,6 +6,7 @@ import { copyCanvasToClipboard, downloadCanvas, batchExportZip } from './core/ex
 import { ScreenshotTool } from './tools/screenshot/screenshotTool';
 import { Annotator, AnnotationToolType } from './core/annotations/annotate';
 import { CodeTool } from './tools/code/codeTool';
+import { SocialTool } from './tools/social/socialTool';
 
 export const store = new Store();
 
@@ -17,6 +18,7 @@ const ctx = canvas.getContext('2d')!;
 export const screenshotTool = new ScreenshotTool(store);
 export const annotator = new Annotator(store);
 export const codeTool = new CodeTool(store);
+export const socialTool = new SocialTool(store);
 
 // Active tool content canvas provider
 let currentContentCanvas: HTMLCanvasElement = document.createElement('canvas');
@@ -38,6 +40,8 @@ export function render(): void {
     currentContentCanvas = screenshotTool.renderContent();
   } else if (activeTool === 'code') {
     currentContentCanvas = codeTool.renderContent();
+  } else if (activeTool === 'social') {
+    currentContentCanvas = socialTool.renderContent();
   }
 
   renderStudioComposition(ctx, {
@@ -63,6 +67,9 @@ export function syncToolPanel(): void {
   } else if (activeTool === 'code') {
     titleEl.textContent = 'Code & Terminal Settings';
     codeTool.renderSettingsUI(bodyEl, () => render());
+  } else if (activeTool === 'social') {
+    titleEl.textContent = 'Social Post Settings';
+    socialTool.renderSettingsUI(bodyEl, () => render());
   } else {
     titleEl.textContent = `${activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} Settings`;
     bodyEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Settings for ${activeTool} will appear here.</p>`;
