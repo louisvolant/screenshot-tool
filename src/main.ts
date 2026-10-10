@@ -11,6 +11,7 @@ import { TestimonialTool } from './tools/testimonial/testimonialTool';
 import { ChatTool } from './tools/chat/chatTool';
 import { NotificationTool } from './tools/notification/notificationTool';
 import { AnnounceTool } from './tools/announce/announceTool';
+import { PRESETS, applyPreset, getRandomPreset, StylePreset } from './core/presets/presets';
 
 export const store = new Store();
 
@@ -163,6 +164,61 @@ function setupBindings(): void {
   document.getElementById('btn-undo')?.addEventListener('click', () => store.undo());
   document.getElementById('btn-redo')?.addEventListener('click', () => store.redo());
   document.getElementById('btn-reset')?.addEventListener('click', () => store.reset());
+
+  // Shuffle Preset (S)
+  const handleShuffle = () => {
+    const randomPreset = getRandomPreset();
+    applyPreset(store.state, randomPreset);
+    store.patch({}); // triggers render and history
+  };
+  document.getElementById('btn-shuffle')?.addEventListener('click', handleShuffle);
+
+  // Presets Modal (G)
+  const presetsModal = document.getElementById('presets-modal') as HTMLElement;
+  const openPresetsModal = () => {
+    if (!presetsModal) return;
+    renderPresetsModalContent();
+    presetsModal.style.display = 'flex';
+  };
+  const closePresetsModal = () => {
+    if (presetsModal) presetsModal.style.display = 'none';
+  };
+  document.getElementById('btn-presets')?.addEventListener('click', openPresetsModal);
+  document.getElementById('btn-close-presets')?.addEventListener('click', closePresetsModal);
+  presetsModal?.addEventListener('click', (e) => {
+    if (e.target === presetsModal) closePresetsModal();
+  });
+
+  // State JSON Export
+  document.getElementById('btn-json-export')?.addEventListener('click', () => {
+    const jsonStr = store.exportJSON();
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `studio-preset-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // State JSON Import
+  const fileInput = document.getElementById('json-file-input') as HTMLInputElement;
+  document.getElementById('btn-json-import')?.addEventListener('click', () => {
+    fileInput?.click();
+  });
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        store.importJSON(content);
+      }
+    };
+    reader.readAsText(file);
+    fileInput.value = '';
+  });
 
   // Dark / Light Theme
   document.getElementById('btn-theme')?.addEventListener('click', () => {
@@ -400,8 +456,102 @@ function setupBindings(): void {
         annotator.setTool(toolMap[key]);
         document.querySelectorAll('#annot-toolbar .annot-btn').forEach((b) => b.classList.remove('active'));
         document.querySelector(`#annot-toolbar .annot-btn[data-tool="${toolMap[key]}"]`)?.classList.add('active');
+      } else if (key === 's') {
+        handleShuffle();
+      } else if (key === 'g') {
+        const modal = document.getElementById('presets-modal');
+        if (modal?.style.display === 'flex') closePresetsModal();
+        else openPresetsModal();
+      } else if (key === 'escape') {
+        closePresetsModal();
       }
     }
+  });
+}
+
+/**
+ * Render Presets modal categories and interactive cards
+ */
+let activeCategory = 'All';
+function renderPresetsModalContent(): void {
+  const catContainer = document.getElementById('presets-categories');
+  const gridContainer = document.getElementById('presets-grid');
+  if (!catContainer || !gridContainer) return;
+
+  const categories = ['All', 'Modern', 'Dark', 'Pastel', 'Vibrant', 'Minimal', 'Editorial', 'Cyber'];
+  catContainer.innerHTML = '';
+  categories.forEach((cat) => {
+    const btn = document.createElement('button');
+    btn.className = `seg-btn ${activeCategory === cat ? 'active' : ''}`;
+    btn.style.cssText = 'padding: 4px 12px; font-size: 12px; border-radius: 999px; white-space: nowrap;';
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      activeCategory = cat;
+      renderPresetsModalContent();
+    });
+    catContainer.appendChild(btn);
+  });
+
+  const filtered = activeCategory === 'All' ? PRESETS : PRESETS.filter((p) => p.category === activeCategory);
+  gridContainer.innerHTML = '';
+
+  filtered.forEach((preset) => {
+    const card = document.createElement('div');
+    card.className = 'preset-card';
+    card.style.cssText = `
+      background: var(--bg-hover);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    `;
+    card.addEventListener('mouseenter', () => {
+      card.style.borderColor = '#6366f1';
+      card.style.transform = 'translateY(-2px)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.borderColor = 'var(--border-color)';
+      card.style.transform = 'none';
+    });
+
+    // Color thumbnail preview
+    const thumb = document.createElement('div');
+    thumb.style.cssText = `
+      height: 64px;
+      border-radius: 6px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+    `;
+    const colors = preset.background.colors;
+    if (preset.background.type === 'solid') {
+      thumb.style.background = colors[0];
+    } else {
+      thumb.style.background = `linear-gradient(${preset.background.angle || 135}deg, ${colors.join(', ')})`;
+    }
+
+    const title = document.createElement('div');
+    title.style.cssText = 'font-size: 13px; font-weight: 600; color: var(--text-color);';
+    title.textContent = preset.name;
+
+    const catLabel = document.createElement('div');
+    catLabel.style.cssText = 'font-size: 11px; color: var(--text-muted);';
+    catLabel.textContent = preset.category;
+
+    card.appendChild(thumb);
+    card.appendChild(title);
+    card.appendChild(catLabel);
+
+    card.addEventListener('click', () => {
+      applyPreset(store.state, preset);
+      store.patch({});
+      const modal = document.getElementById('presets-modal');
+      if (modal) modal.style.display = 'none';
+    });
+
+    gridContainer.appendChild(card);
   });
 }
 
