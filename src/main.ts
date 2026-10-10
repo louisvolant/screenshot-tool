@@ -8,6 +8,7 @@ import { Annotator, AnnotationToolType } from './core/annotations/annotate';
 import { CodeTool } from './tools/code/codeTool';
 import { SocialTool } from './tools/social/socialTool';
 import { TestimonialTool } from './tools/testimonial/testimonialTool';
+import { ChatTool } from './tools/chat/chatTool';
 
 export const store = new Store();
 
@@ -21,6 +22,7 @@ export const annotator = new Annotator(store);
 export const codeTool = new CodeTool(store);
 export const socialTool = new SocialTool(store);
 export const testimonialTool = new TestimonialTool(store);
+export const chatTool = new ChatTool(store);
 
 // Active tool content canvas provider
 let currentContentCanvas: HTMLCanvasElement = document.createElement('canvas');
@@ -46,6 +48,8 @@ export function render(): void {
     currentContentCanvas = socialTool.renderContent();
   } else if (activeTool === 'testimonial') {
     currentContentCanvas = testimonialTool.renderContent();
+  } else if (activeTool === 'chat') {
+    currentContentCanvas = chatTool.renderContent();
   }
 
   renderStudioComposition(ctx, {
@@ -77,6 +81,9 @@ export function syncToolPanel(): void {
   } else if (activeTool === 'testimonial') {
     titleEl.textContent = 'Review & Testimonial Settings';
     testimonialTool.renderSettingsUI(bodyEl, () => render());
+  } else if (activeTool === 'chat') {
+    titleEl.textContent = 'Chat Conversation Settings';
+    chatTool.renderSettingsUI(bodyEl, () => render());
   } else {
     titleEl.textContent = `${activeTool.charAt(0).toUpperCase() + activeTool.slice(1)} Settings`;
     bodyEl.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">Settings for ${activeTool} will appear here.</p>`;
