@@ -67,4 +67,39 @@ test.describe('Feature 2: Screenshot & Device Mockup Studio', () => {
     const spreadVal = page.locator('#montage-spread-val');
     await expect(spreadVal).toHaveText('65%');
   });
+
+  test('should support pasting screenshot image via clipboard paste event', async ({ page }) => {
+    // Navigate away to another tool to verify auto-switch on paste
+    await page.click('button[data-tool="code"]');
+    await expect(page.locator('#panel-tool-title')).toHaveText('Code & Terminal Settings');
+
+    // Simulate clipboard paste event with image data in the browser page
+    await page.evaluate(() => {
+      // Create a 1x1 png pixel in base64
+      const b64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+      const byteCharacters = atob(b64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+      const file = new File([blob], 'screenshot.png', { type: 'image/png' });
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+
+      const pasteEvent = new ClipboardEvent('paste', {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: dataTransfer,
+      });
+
+      window.dispatchEvent(pasteEvent);
+    });
+
+    // Should auto-switch activeTool to screenshot
+    await expect(page.locator('#panel-tool-title')).toHaveText('Screenshot & Framing');
+    await expect(page.locator('.tool-btn[data-tool="screenshot"]')).toHaveClass(/active/);
+  });
 });

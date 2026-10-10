@@ -619,6 +619,7 @@ The entire application state is governed by an immutable Store pattern:
 | `Ctrl + Shift + Z` / `Cmd + Shift + Z` | Global | Redo action |
 | `Ctrl + Y` / `Cmd + Y` | Global | Redo action |
 | `Ctrl + C` / `Cmd + C` | Workspace | Copy rendered canvas to clipboard |
+| `Ctrl + V` / `Cmd + V` | Workspace | Paste screenshot image from clipboard |
 | `Ctrl + S` / `Cmd + S` | Workspace | Download rendered image file |
 | `S` | Workspace | Shuffle to a random style preset |
 | `G` | Workspace | Open / close Styles library modal |

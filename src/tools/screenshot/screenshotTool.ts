@@ -28,6 +28,19 @@ export class ScreenshotTool {
     this.autoExtractPalette(canvas);
   }
 
+  public loadImageFile(file: File | Blob, onLoaded?: () => void): void {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth || img.width;
+      c.height = img.naturalHeight || img.height;
+      c.getContext('2d')!.drawImage(img, 0, 0);
+      this.setPrimaryShot(c);
+      if (onLoaded) onLoaded();
+    };
+    img.src = URL.createObjectURL(file);
+  }
+
   public createSampleShot(index = 1): HTMLCanvasElement {
     const c = document.createElement('canvas');
     c.width = 800;
@@ -156,6 +169,9 @@ export class ScreenshotTool {
         </label>
         <button class="btn-secondary" id="btn-add-sample">Add Sample</button>
       </div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: -4px; margin-bottom: 8px;">
+        💡 Tip: You can also paste an image anywhere with <kbd style="background: var(--bg-hover); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border-color);">Ctrl+V</kbd> / <kbd style="background: var(--bg-hover); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border-color);">Cmd+V</kbd> or drag & drop.
+      </div>
 
       <!-- Hardware Frame Selector -->
       <div class="field">
@@ -243,16 +259,7 @@ export class ScreenshotTool {
     fileInput?.addEventListener('change', (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      const img = new Image();
-      img.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth || img.width;
-        c.height = img.naturalHeight || img.height;
-        c.getContext('2d')!.drawImage(img, 0, 0);
-        this.setPrimaryShot(c);
-        onUpdate();
-      };
-      img.src = URL.createObjectURL(file);
+      this.loadImageFile(file, onUpdate);
     });
 
     // Add Sample button

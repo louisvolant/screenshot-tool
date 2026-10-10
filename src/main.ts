@@ -467,6 +467,65 @@ function setupBindings(): void {
       }
     }
   });
+
+  // Global Clipboard Paste (Ctrl+V / Cmd+V)
+  window.addEventListener('paste', (e: ClipboardEvent) => {
+    const inInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+    if (inInput) return; // Allow natural text pasting inside input fields
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          // Switch to screenshot tool if on another tool
+          if (store.state.activeTool !== 'screenshot') {
+            document.querySelectorAll('.tool-btn').forEach((b) => b.classList.remove('active'));
+            document.querySelector('.tool-btn[data-tool="screenshot"]')?.classList.add('active');
+            store.set('activeTool', 'screenshot');
+            syncToolPanel();
+          }
+          screenshotTool.loadImageFile(file, () => {
+            render();
+          });
+          break;
+        }
+      }
+    }
+  });
+
+  // Drag and Drop Image Support
+  const dropZone = document.querySelector('.stage') as HTMLElement || canvas;
+  dropZone.addEventListener('dragover', (e: DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  });
+
+  dropZone.addEventListener('drop', (e: DragEvent) => {
+    e.preventDefault();
+    const files = e.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/')) {
+        if (store.state.activeTool !== 'screenshot') {
+          document.querySelectorAll('.tool-btn').forEach((b) => b.classList.remove('active'));
+          document.querySelector('.tool-btn[data-tool="screenshot"]')?.classList.add('active');
+          store.set('activeTool', 'screenshot');
+          syncToolPanel();
+        }
+        screenshotTool.loadImageFile(file, () => {
+          render();
+        });
+        break;
+      }
+    }
+  });
 }
 
 /**
